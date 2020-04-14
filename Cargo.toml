@@ -1,0 +1,7 @@
+[package]
+name = "text-adventurers"
+version = "0.1.0"
+authors = ["Andrew McLees <andrewmclees@google.com>"]
+edition = "2018"
+
+[dependencies]
