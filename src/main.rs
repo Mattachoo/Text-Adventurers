@@ -1,3 +1,6 @@
+mod stat;
+mod table;
+
 use std::io;
 use std::io::Write;
 
@@ -61,7 +64,13 @@ impl Interface for StandardIoInterface {
     }
 }
 
-pub struct World;
+pub struct World {
+    pub player: Character,
+}
+
+pub struct Character {
+    stats: stat::StatBlock,
+}
 
 #[derive(Debug)]
 enum Summit {
@@ -154,7 +163,17 @@ fn exit<I: Interface>(mut interface: I, _world: World) -> ExitMarker {
 }
 
 fn main() {
-    let interface = StandardIoInterface {};
-    let world = World {};
+    let mut interface = StandardIoInterface {};
+    let mut world = World {
+        player: Character {
+            stats: stat::StatBlock::new(),
+        },
+    };
+    world
+        .player
+        .stats
+        .mut_stat(stat::StatKind::Strength)
+        .advance(1000);
+    interface.write(world.player.stats.print_table().as_str());
     enter(interface, world);
 }
