@@ -1,4 +1,5 @@
 mod stat;
+mod story_graph;
 mod table;
 
 use std::io;
