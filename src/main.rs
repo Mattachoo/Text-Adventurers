@@ -4,14 +4,12 @@ mod io;
 mod stat;
 mod story_graph;
 mod table;
+mod world;
 
 use character::Character;
 use choice::ConstantChoice;
 use io::{Interface, StandardIoInterface};
-
-pub struct World {
-    pub player: Character,
-}
+use world::World;
 
 #[derive(Debug)]
 enum Summit {
