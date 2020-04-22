@@ -1,18 +1,16 @@
+mod character;
 mod choice;
 mod io;
 mod stat;
 mod story_graph;
 mod table;
 
+use character::Character;
 use choice::ConstantChoice;
 use io::{Interface, StandardIoInterface};
 
 pub struct World {
     pub player: Character,
-}
-
-pub struct Character {
-    stats: stat::StatBlock,
 }
 
 #[derive(Debug)]
