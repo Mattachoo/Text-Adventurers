@@ -1,4 +1,5 @@
 pub mod mass;
+pub mod temperature;
 
 // Some units are represented as floating-point numbers. Their comparisons
 // will use UNIT_PRECISION when determining equality.
@@ -13,4 +14,3 @@ pub enum UnitSystem {
 pub trait UnitDisplay {
     fn display_with_units(&self, units: UnitSystem) -> String;
 }
-
