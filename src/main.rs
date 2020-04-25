@@ -1,3 +1,4 @@
+mod inventory;
 mod stat;
 mod table;
 
