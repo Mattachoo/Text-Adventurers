@@ -54,7 +54,7 @@ pub struct TestInterface {
 }
 
 impl TestInterface {
-    fn new(preset_choices: VecDeque<usize>) -> TestInterface {
+    pub fn new(preset_choices: VecDeque<usize>) -> TestInterface {
         TestInterface {
             written: String::new(),
             preset_choices,
