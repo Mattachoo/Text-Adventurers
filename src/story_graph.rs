@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use crate::io::Interface;
+use crate::world::World;
+
 pub struct StoryGraph {
     node_name_to_node: HashMap<String, StoryNode>,
 }
@@ -22,7 +25,7 @@ impl StoryGraph {
 
 pub struct StoryNode {
     name: String,
-    elements: Vec<Box<StoryElement>>,
+    elements: Vec<StoryElement>,
 }
 
 impl StoryNode {
@@ -34,17 +37,42 @@ impl StoryNode {
     }
 }
 
-pub trait StoryElement {
-    // TODO(andrewmclees): Add the IO interface and world as parameters.
-    fn run(&self, index: i64, current_node: &StoryNode, graph: &StoryGraph);
+enum StoryElement {
+    Text(StoryText),
+    Choice(StoryChoice),
+}
+
+impl StoryElement {
+    fn run<I: Interface>(
+        &self,
+        index: i64,
+        current_node: &StoryNode,
+        graph: &StoryGraph,
+        interface: I,
+        world: World,
+    ) {
+        match self {
+            StoryElement::Text(text) => text.run(index, current_node, graph, interface, world),
+            StoryElement::Choice(choice) => {
+                choice.run(index, current_node, graph, interface, world)
+            }
+        }
+    }
 }
 
 pub struct StoryChoice {
     options: Vec<StoryOption>,
 }
 
-impl StoryElement for StoryChoice {
-    fn run(&self, index: i64, current_node: &StoryNode, graph: &StoryGraph) {
+impl StoryChoice {
+    fn run<I: Interface>(
+        &self,
+        index: i64,
+        current_node: &StoryNode,
+        graph: &StoryGraph,
+        interface: I,
+        world: World,
+    ) {
         // TODO(amclees): Implement this function.
     }
 }
@@ -59,8 +87,15 @@ pub struct StoryText {
     text: String,
 }
 
-impl StoryElement for StoryText {
-    fn run(&self, index: i64, current_node: &StoryNode, graph: &StoryGraph) {
+impl StoryText {
+    fn run<I: Interface>(
+        &self,
+        index: i64,
+        current_node: &StoryNode,
+        graph: &StoryGraph,
+        interface: I,
+        world: World,
+    ) {
         // TODO(amclees): Implement this function.
     }
 }
