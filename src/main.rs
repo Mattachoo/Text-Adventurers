@@ -1,7 +1,7 @@
 use std::io;
 use std::io::Write;
-
-pub trait Choice {
+mod adventure_parser;
+pub trait   {
     fn describe(&self) -> String;
 }
 

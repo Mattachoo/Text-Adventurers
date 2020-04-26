@@ -1,0 +1,7 @@
+#BeginStory
+This is the story.
+> 'Run around in circles until you eventually stop'
+> 'You run in circles for two hours, but eventually find yourself at the same spot'
+> Goto -> BeginStory
+> 'Head onward'
+> Goto -> NextNode2
