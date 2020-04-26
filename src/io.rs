@@ -1,5 +1,7 @@
+use std::collections::VecDeque;
 use std::io;
 use std::io::Write;
+use std::iter::FromIterator;
 
 use crate::choice::Choice;
 
@@ -43,5 +45,69 @@ impl Interface for StandardIoInterface {
                 }
             }
         }
+    }
+}
+
+pub struct TestInterface {
+    pub written: String,
+    pub preset_choices: VecDeque<usize>,
+}
+
+impl TestInterface {
+    fn new(preset_choices: VecDeque<usize>) -> TestInterface {
+        TestInterface {
+            written: String::new(),
+            preset_choices,
+        }
+    }
+}
+
+impl Interface for TestInterface {
+    fn write(&mut self, message: &str) {
+        self.written.push_str(message);
+    }
+
+    fn choose<T: Choice>(&mut self, mut choices: Vec<T>) -> T {
+        choices.swap_remove(self.preset_choices.pop_front().unwrap())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    pub fn test_interface_writes_messages() {
+        let mut interface = TestInterface::new(VecDeque::new());
+        assert_eq!(interface.written, String::new());
+        interface.write("foo");
+        assert_eq!(interface.written, "foo");
+        interface.write(" bar");
+        assert_eq!(interface.written, "foo bar");
+    }
+
+    #[derive(Clone)]
+    struct TestChoice {
+        val: i32,
+    }
+
+    impl Choice for TestChoice {
+        fn describe(&self) -> String {
+            self.val.to_string()
+        }
+    }
+
+    #[test]
+    pub fn test_interface_chooses_preset_options() {
+        let mut interface = TestInterface::new(VecDeque::from(vec![0, 1, 0, 2]));
+        let options = vec![
+            TestChoice { val: 12 },
+            TestChoice { val: 42 },
+            TestChoice { val: 123 },
+        ];
+        assert_eq!(interface.choose(options.clone()).val, 12);
+        assert_eq!(interface.choose(options.clone()).val, 42);
+        assert_eq!(interface.choose(options.clone()).val, 12);
+        assert_eq!(interface.choose(options.clone()).val, 123);
     }
 }
