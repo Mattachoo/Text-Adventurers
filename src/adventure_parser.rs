@@ -24,7 +24,7 @@ const TITLE : char = '#';
 const SPEAKER : char = '`';
 const ACTION : char = '`';
                 
-fn main()  -> Result<(), io::Error> {   
+fn main() -> Result<(), io::Error> {
 	let mut my_map = HashMap::new();
     let f = File::open("sample_input_0.txt")?;
     let file = BufReader::new(&f);
