@@ -1,0 +1,4 @@
+#Main
+Hi {username}! Welcome to Barovia!
+What's your character's name?
+> Enter_Name -> player.name; BeginStory
