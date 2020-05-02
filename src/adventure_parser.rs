@@ -6,13 +6,12 @@ use std::io::BufReader;
 use std::path::Path;
 
 //rules of the syntax:
-//some character to signify the start of a choice
+//Some character to signify the start of a choice
 //Narrator is the default character. It is reset to narrator at the start of each choice. A different character can be set by surrounding their name with back ticks: `
-//trailing '----' makes parsing a bit harder
-//each choice ends at an empty new line, and waits for user input
-//depending on user input, a choice is called
-//initial idea is to store choices in a map, so that you can easily switch between them. Aa grid like structure could be made to make a more logical structure, in which only potential choices are connected to the current one
-//need a character to signify an operation/function call
+//Each choice ends at an empty new line, and then waits for user input.
+//Depending on user input, a specified choice is called.
+//My Initial idea is to store choices in a map, so that you can easily switch between them. Aa grid like structure could be made to make a more logical structure, in which only potential choices are connected to the current one.
+//We need to define a character to signify an operation/function call.
 
 struct Choice {
     title: String,
@@ -20,17 +19,15 @@ struct Choice {
     option: String,
 }
 
-const TITLE: char = '#';
-const SPEAKER: char = '`';
-const ACTION: char = '`';
+const TITLE_TOKEN: char = '#';
+const SPEAKER_TOKEN: char = '`';
+const ACTION_TOKEN: char = '`';
 
-fn main() -> Result<(), io::Error> {
-    let mut my_map = HashMap::new();
-    let f = File::open("sample_input_0.txt")?;
+fn build_map(input_file : & str) -> Result<(), io::Error> {
+    let mut choices = HashMap::new();
+    let f = File::open(input_file)?;
     let file = BufReader::new(&f);
     let mut my_choice: Choice;
-    //let mut current : String = "".to_string().to_owned();
-    //let mut narrator : String = "".to_string().to_owned();
     let mut dialog: String = "".to_string().to_owned();
     for line in file.lines() {
         if let Ok(ip) = line {
@@ -38,7 +35,7 @@ fn main() -> Result<(), io::Error> {
             let mut narrator: String = "".to_string().to_owned();
             // let l = line..as_red().unwrap();
             if ip.chars().count() <= 0 {
-                my_map.insert(
+                choices.insert(
                     current.clone(),
                     Choice {
                         title: current.to_string(),
@@ -48,23 +45,22 @@ fn main() -> Result<(), io::Error> {
                 );
                 narrator = "".to_string();
             } else {
-                //character_check(l, current,my_map);
                 let character = ip.chars().next().unwrap();
                 match character {
-                    TITLE =>
-                    //add code to remove #
+                    TITLE_TOKEN =>
+                    //TODO(Mattachoo): add code to remove #
                     {
                         current = ip
                     }
-                    SPEAKER =>
-                    //add code to remove backticks
+                    SPEAKER_TOKEN =>
+                    //TODO(Mattachoo):add code to remove backticks
                     {
                         narrator = ip
                     }
                     _ => dialog.push_str(&narrator),
                 }
             }
-            for (key, value) in &my_map {
+            for (key, value) in &choices {
                 println!("{}", key);
             }
         }
