@@ -23,6 +23,7 @@ impl<T> Accessor<T> {
     }
 }
 
+#[derive(Clone)]
 pub struct AccessPath {
     segments: Vec<String>,
 }

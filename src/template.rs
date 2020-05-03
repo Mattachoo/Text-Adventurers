@@ -1,11 +1,13 @@
 use crate::accessible::{AccessPath, Accessible};
 
+#[derive(Clone)]
 pub enum Token {
     Text(String),
     Accessor(AccessPath),
 }
 
-struct Template {
+#[derive(Clone)]
+pub struct Template {
     pub tokens: Vec<Token>,
 }
 
