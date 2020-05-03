@@ -10,6 +10,13 @@ struct Template {
 }
 
 impl Template {
+    // Builds a plaintext template from a &str (no parsing).
+    pub fn raw_from_str(text: &str) -> Template {
+        Template {
+            tokens: vec![Token::Text(String::from(text))],
+        }
+    }
+
     pub fn render(&self, accessible: &Accessible) -> String {
         let mut rendered = String::new();
         for token in &self.tokens {
@@ -66,6 +73,13 @@ mod tests {
         };
         let container = TestContainer::new();
         assert_eq!(template.render(&container), "Foo\nBar Baz.");
+    }
+
+    #[test]
+    fn renders_raw_text() {
+        let template = Template::raw_from_str("Foo Bar");
+        let container = TestContainer::new();
+        assert_eq!(template.render(&container), "Foo Bar");
     }
 
     #[test]
