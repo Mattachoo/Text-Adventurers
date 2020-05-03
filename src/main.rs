@@ -1,3 +1,4 @@
+mod accessible;
 mod character;
 mod choice;
 mod io;
