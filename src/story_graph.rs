@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::choice::Choice;
 use crate::io::Interface;
+use crate::template::Template;
 use crate::world::World;
 
 pub struct StoryGraph {
@@ -82,34 +83,52 @@ impl StoryChoice {
         interface: &mut I,
         world: World,
     ) {
-        let chosen = interface.choose(self.options.clone());
-        if let Some(result_text) = chosen.result_text {
-            interface.write(result_text.as_str());
+        let rendered_options = self.render_options(&world);
+        let chosen_rendered = interface.choose(rendered_options);
+        let chosen = &self.options[chosen_rendered.index];
+        if let Some(result_text) = &chosen.result_text {
+            interface.write(&result_text.render(&world));
         }
-        if let Some(next_node) = chosen.next_node {
+        if let Some(next_node) = &chosen.next_node {
             let next_node = graph.get_node(next_node.as_str());
             next_node.elements[0].run(0, next_node, graph, interface, world);
         } else {
             current_node.elements[index + 1].run(index + 1, current_node, graph, interface, world);
         }
     }
+
+    fn render_options(&self, world: &World) -> Vec<RenderedStoryOption> {
+        let mut rendered = Vec::new();
+        for (index, option) in self.options.iter().enumerate() {
+            rendered.push(RenderedStoryOption {
+                rendered_intro: option.intro_text.render(world),
+                index,
+            });
+        }
+        rendered
+    }
 }
 
 #[derive(Clone)]
 pub struct StoryOption {
-    intro_text: String,
-    result_text: Option<String>,
+    intro_text: Template,
+    result_text: Option<Template>,
     next_node: Option<String>,
 }
 
-impl Choice for StoryOption {
+struct RenderedStoryOption {
+    rendered_intro: String,
+    index: usize,
+}
+
+impl Choice for RenderedStoryOption {
     fn describe(&self) -> String {
-        self.intro_text.clone()
+        self.rendered_intro.clone()
     }
 }
 
 pub struct StoryText {
-    text: String,
+    text: Template,
 }
 
 impl StoryText {
@@ -121,7 +140,7 @@ impl StoryText {
         interface: &mut I,
         world: World,
     ) {
-        interface.write(self.text.as_str());
+        interface.write(&self.text.render(&world));
         current_node.elements[index + 1].run(index, current_node, graph, interface, world);
     }
 }
@@ -131,7 +150,10 @@ mod tests {
     use std::collections::VecDeque;
 
     use super::*;
+    use crate::accessible::AccessPath;
     use crate::io::TestInterface;
+    use crate::template;
+    use crate::template::Template;
     use crate::world::World;
 
     #[test]
@@ -147,7 +169,15 @@ mod tests {
             "FooNode".to_string(),
             vec![
                 StoryElement::Text(StoryText {
-                    text: "Sample text.\n".to_string(),
+                    text: Template {
+                        tokens: vec![
+                            template::Token::Text(String::from("player.name: ")),
+                            template::Token::Accessor(AccessPath::from(String::from(
+                                "player.name",
+                            ))),
+                            template::Token::Text(String::from(".\n")),
+                        ],
+                    },
                 }),
                 StoryElement::Exit,
             ],
@@ -158,7 +188,7 @@ mod tests {
         node.elements[0].run(0, &node, &graph, &mut interface, world);
         assert_eq!(
             interface.written,
-            "Sample text.\nGoodbye! Thanks for playing."
+            "player.name: Player.\nGoodbye! Thanks for playing."
         );
     }
 
@@ -170,13 +200,13 @@ mod tests {
                 StoryElement::Choice(StoryChoice {
                     options: vec![
                         StoryOption {
-                            intro_text: "Foo\n".to_string(),
+                            intro_text: Template::raw_from_str("Foo\n"),
                             result_text: None,
                             next_node: None,
                         },
                         StoryOption {
-                            intro_text: "Bar\n".to_string(),
-                            result_text: Some("Baz\n".to_string()),
+                            intro_text: Template::raw_from_str("Bar\n"),
+                            result_text: Some(Template::raw_from_str("Baz\n")),
                             next_node: None,
                         },
                     ],
@@ -202,19 +232,19 @@ mod tests {
             "FooNode".to_string(),
             vec![
                 StoryElement::Text(StoryText {
-                    text: "Choose Foo or Bar\n".to_string(),
+                    text: Template::raw_from_str("Choose Foo or Bar\n"),
                 }),
                 StoryElement::Choice(StoryChoice {
                     options: vec![
                         StoryOption {
-                            intro_text: "Foo\n".to_string(),
-                            result_text: Some("Chose Foo\n".to_string()),
-                            next_node: Some("FooNode".to_string()),
+                            intro_text: Template::raw_from_str("Foo\n"),
+                            result_text: Some(Template::raw_from_str("Chose Foo\n")),
+                            next_node: Some(String::from("FooNode")),
                         },
                         StoryOption {
-                            intro_text: "Bar\n".to_string(),
+                            intro_text: Template::raw_from_str("Bar\n"),
                             result_text: None,
-                            next_node: Some("BarNode".to_string()),
+                            next_node: Some(String::from("BarNode")),
                         },
                     ],
                 }),
@@ -224,7 +254,7 @@ mod tests {
             "BarNode".to_string(),
             vec![
                 StoryElement::Text(StoryText {
-                    text: "Reached Bar\n".to_string(),
+                    text: Template::raw_from_str("Reached Bar\n"),
                 }),
                 StoryElement::Exit,
             ],

@@ -1,9 +1,11 @@
+mod accessible;
 mod character;
 mod choice;
 mod io;
 mod stat;
 mod story_graph;
 mod table;
+mod template;
 mod world;
 
 use character::Character;
@@ -103,11 +105,7 @@ fn exit<I: Interface>(mut interface: I, _world: World) -> ExitMarker {
 
 fn main() {
     let mut interface = StandardIoInterface {};
-    let mut world = World {
-        player: Character {
-            stats: stat::StatBlock::new(),
-        },
-    };
+    let mut world = World::empty();
     world
         .player
         .stats
