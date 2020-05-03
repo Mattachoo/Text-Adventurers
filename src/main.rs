@@ -5,6 +5,7 @@ mod io;
 mod stat;
 mod story_graph;
 mod table;
+mod template;
 mod world;
 
 use character::Character;
