@@ -16,7 +16,7 @@ leading to a path down the mountainside.
 > Goto -> BladeMountainView
 
 > 'Search the tip of the mountain.'
-> Check Perception 9 -> BladeMountainNote BladeMountainFailedSearch
+> Check Perception 9 10xp -> BladeMountainNote BladeMountainFailedSearch
 
 > 'Head down the staircase.'
 > 'You head down the stairs.'
@@ -73,7 +73,6 @@ BladeMountainFailedSearch
 
 You find nothing.
 
-> 'Back to where you were...'
 > Goto -> BladeMountainSummit
 
 BladeMountainUpperPath
@@ -104,12 +103,12 @@ brush off the path.
 > Goto -> BladeMountainApproachStan
 
 > 'Attack the man.'
-> Combat -> {
+> Combat {
 > 1x BladeMountainStan
-> } BladeMountainDefeatedStan BladeMountainDefeatedByStan
+> } -> BladeMountainDefeatedStan BladeMountainDefeatedByStan
 
 > 'Try to avoid the man, giving the path a wide berth.'
-> Check Sneak 15 -> BladeMountainAvoidedStan BladeMountainFailedToAvoidStan
+> Check Sneak 15 50xp -> BladeMountainAvoidedStan BladeMountainFailedToAvoidStan
 
 > 'Head back up the stairs.'
 > Goto -> BladeMountainSummit
@@ -123,10 +122,10 @@ running across his face.
 Stan: Hello there, traveler. I didn't see you come up, have you been up long?
 
 > 'Yes, I've been up for a few days.'
-> Check Deception 8 -> BladeMountainStanThinksTraveler BladeMountainCaughtInLie
+> Check Deception 8 20xp -> BladeMountainStanThinksTraveler BladeMountainCaughtInLie
 
 > 'No, I just came up this path a few moments ago.'
-> Check Deception 10 -> BladeMountainStanThinksTraveler BladeMountainCaughtInLie
+> Check Deception 10 40xp -> BladeMountainStanThinksTraveler BladeMountainCaughtInLie
 
 > 'Maybe. I don't really know how I got here.'
 > Goto -> BladeMountainStanTruth
