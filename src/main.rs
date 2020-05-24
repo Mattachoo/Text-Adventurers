@@ -1,6 +1,7 @@
 mod accessible;
 mod character;
 mod choice;
+mod inventory;
 mod io;
 mod stat;
 mod story_graph;
