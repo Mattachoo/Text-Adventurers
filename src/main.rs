@@ -7,6 +7,7 @@ mod stat;
 mod story_graph;
 mod table;
 mod template;
+mod unit;
 mod world;
 
 use character::Character;
