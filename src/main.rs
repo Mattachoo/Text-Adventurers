@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 use std::io;
 use std::io::Write;
 mod adventure_parser;
@@ -62,6 +63,22 @@ impl Interface for StandardIoInterface {
 }
 
 pub struct World;
+=======
+mod accessible;
+mod character;
+mod choice;
+mod io;
+mod stat;
+mod story_graph;
+mod table;
+mod template;
+mod world;
+
+use character::Character;
+use choice::ConstantChoice;
+use io::{Interface, StandardIoInterface};
+use world::World;
+>>>>>>> 53ef8eab27f90c038daacb212101083788c73fd9
 
 #[derive(Debug)]
 enum Summit {
@@ -154,7 +171,13 @@ fn exit<I: Interface>(mut interface: I, _world: World) -> ExitMarker {
 }
 
 fn main() {
-    let interface = StandardIoInterface {};
-    let world = World {};
+    let mut interface = StandardIoInterface {};
+    let mut world = World::empty();
+    world
+        .player
+        .stats
+        .mut_stat(stat::StatKind::Strength)
+        .advance(1000);
+    interface.write(world.player.stats.print_table().as_str());
     enter(interface, world);
 }
