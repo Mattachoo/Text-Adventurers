@@ -16,37 +16,19 @@ use std::sync::mpsc::*;
 //My Initial idea is to store choices in a map, so that you can easily switch between them. Aa grid like structure could be made to make a more logical structure, in which only potential choices are connected to the current one.
 //We need to define a character to signify an operation/function call.
 
-struct Choice {
-    title: String,
-    dialogue: String,
-    option: String,
-}
-fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
-    BufReader::new(File::open(filename)?).lines().collect()
-}
 pub fn run() {
-    println!("Running");
-    let code = "(Atan2
-                    (SiN ( - X x))
-                    ( / x y ))";
     let filename = "C:\\Users\\Mattachu\\Documents\\text-adventurers\\src\\sample_input_0.txt";
 
-    let input_vec: &str = &*read_to_string(filename).expect("File not Found");
+    let story_graph_text: &str = &*read_to_string(filename).expect("File not Found");
     // Can use crossbeam-utils here as well for scoped thread
-    rayon::scope(|s| {
-        let (sender, receiver) = channel();
-        s.spawn(|_| {
-            Lexer::begin_lexing(input_vec, sender);
-        });
-        while let Ok(token) = receiver.recv() {
-            println!("Token received from channel: {:?}", token);
-        }
-    });
+    let (sender, receiver) = channel();
+    Lexer::lex(story_graph_text, sender);
+    while let Ok(token) = receiver.recv() {
+        println!("Token received from channel: {:?}", token);
+    }
 }
 #[derive(Debug)]
 pub enum Token<'a> {
-    OpenParen(usize),
-    CloseParen(usize),
     Title(&'a str, usize),
     Action(&'a str, Vec<&'a str>, usize),
     Text(&'a str, usize),
@@ -76,7 +58,7 @@ pub struct Lexer<'a> {
 struct StateFunction(fn(&mut Lexer) -> Option<StateFunction>);
 
 impl<'a> Lexer<'a> {
-    pub fn begin_lexing(s: &'a str, sender: Sender<Token<'a>>) {
+    pub fn lex(s: &'a str, sender: Sender<Token<'a>>) {
         let mut lexer = Lexer::<'a> {
             input: s,
             start: 0,
@@ -90,12 +72,11 @@ impl<'a> Lexer<'a> {
     }
     fn run(&mut self) {
         //println!("Reached");
-        let mut stop: bool = false;
         let mut state = self.process();
-        while !stop {
+        loop {
             //println!("Position: {}", self.pos);
             match state {
-                State::End => stop = true,
+                State::End => break,
                 State::Title => state = self.lex_title(),
                 State::Next => state = self.next(),
                 State::GoTo => state = self.lex_goto(),
@@ -137,7 +118,8 @@ impl<'a> Lexer<'a> {
             state = State::End;
         } else if self.peek().trim() == "----" {
             state = State::Title;
-        } else if (&self.input[self.start..self.getNextPosOfChar(self.start, '\n')]).contains("->")
+        } else if (&self.input[self.start..self.get_next_pos_of_char(self.start, '\n')])
+            .contains("->")
         {
             state = State::GoTo;
         } else {
@@ -151,12 +133,12 @@ impl<'a> Lexer<'a> {
         //Peek next line, if it is '----', then current line is a title
         //Send the title to the parser
         // println!("Lex Title: ");
-        self.pos = self.getNextPosOfChar(self.start, '\n');
+        self.pos = self.get_next_pos_of_char(self.start, '\n');
         self.emit(Token::Title(
             &self.input[self.start..self.pos],
             self.current_line,
         ));
-        self.pos = self.getNextPosOfChar(self.pos, '\n');
+        self.pos = self.get_next_pos_of_char(self.pos, '\n');
         State::Next
     }
     //Function to process ->
@@ -165,9 +147,12 @@ impl<'a> Lexer<'a> {
 
         //if the line contains a '->', then the line contains an action
         //create token which contains the function name and a vector of its arguements
-        let line_break: usize = self.getNextPosOfChar(self.pos, '\n');
-        let parameter = vec![&self.input[self.pos..line_break]];
+        let line_break: usize = self.get_next_pos_of_char(self.pos, '\n');
+        let line = &self.input[self.start..line_break];
+        let test: Vec<&str> = line.split("->").collect();
+        let parameter = vec![test[1]];
         self.emit(Token::Action("GoTo", parameter, self.current_line));
+        self.pos = line_break;
 
         State::Next
     }
@@ -187,7 +172,7 @@ impl<'a> Lexer<'a> {
         //  println!("Lex Text: ");
 
         //Send the text to the parser
-        self.pos = self.getNextPosOfChar(self.start, '\n');
+        self.pos = self.get_next_pos_of_char(self.start, '\n');
         self.emit(Token::Text(
             &self.input[self.start..self.pos],
             self.current_line,
@@ -207,15 +192,15 @@ impl<'a> Lexer<'a> {
     //For our purposes, we need some version of "determine_token" that checks if a new Node is starting?
     //Return the next line
     fn peek(&self) -> &str {
-        let i: usize = self.getNextPosOfChar(self.start, '\n') + 1;
-        let j: usize = self.getNextPosOfChar(i, '\n');
+        let i: usize = self.get_next_pos_of_char(self.start, '\n') + 1;
+        let j: usize = self.get_next_pos_of_char(i, '\n');
         if self.eof() {
             //Something stating that EOF reached
         }
         &self.input[i..j]
     }
     fn validate() {}
-    fn getNextPosOfChar(&self, currentPos: usize, check: char) -> usize {
+    fn get_next_pos_of_char(&self, currentPos: usize, check: char) -> usize {
         let mut newPos: usize = 0;
         while self.input.len() > currentPos + newPos
             && self.input[(currentPos + newPos)..].chars().next().unwrap() != check
@@ -224,7 +209,7 @@ impl<'a> Lexer<'a> {
         }
         currentPos + newPos
     }
-    fn isActionWord() {
+    fn is_action_word() {
         //check to see if the string contains keywords
     }
 }

@@ -1,4 +1,25 @@
-#Main
-Hi {username}! Welcome to Barovia!
-What's your character's name?
-> Enter_Name -> player.name; BeginStory
+BladeMountainNote
+----
+
+You search the tip of the mountain carefully, finding a small note not twenty
+feet from where you awoke.
+
+'Read the note'
+'The note mentions the "Gerr Empire," and seems to suggest you have gone
+somewhere you should not have.'
+Goto -> BladeMountainNote
+
+'Pocket the note'
+AddItem BladeMountainNoteFromHand
+
+You find nothing else of interest.
+
+> Goto -> BladeMountainSummit
+
+BladeMountainFailedSearch
+----
+
+You find nothing.
+
+'Back to where you were...'
+Goto -> BladeMountainSummit

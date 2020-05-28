@@ -1,73 +1,9 @@
-<<<<<<< HEAD
-use std::io;
-use std::io::Write;
-mod adventure_parser;
-pub trait Choice {
-    fn describe(&self) -> String;
-}
-
-pub trait ConstantChoice {
-    fn describe_str(&self) -> &str;
-}
-
-impl<T> Choice for T
-where
-    T: ConstantChoice,
-{
-    fn describe(&self) -> String {
-        String::from(self.describe_str())
-    }
-}
-
-pub trait Interface {
-    fn write(&mut self, message: &str);
-    fn choose<T: Choice>(&mut self, choices: Vec<T>) -> T;
-}
-
-pub struct StandardIoInterface;
-
-impl Interface for StandardIoInterface {
-    fn write(&mut self, message: &str) {
-        println!("{}", message);
-    }
-
-    fn choose<T: Choice>(&mut self, mut choices: Vec<T>) -> T {
-        for (i, choice) in choices.iter().enumerate() {
-            println!("{}) {}", i + 1, choice.describe());
-        }
-        println!("What do you do?");
-        loop {
-            print!("> ");
-            io::stdout().flush().expect("failed to flush stdio");
-            let mut chosen = String::new();
-            io::stdin()
-                .read_line(&mut chosen)
-                .expect("failed to read from stdin");
-            match chosen.trim().parse::<usize>() {
-                Ok(chosen_index) => {
-                    if chosen_index < 1 || chosen_index > choices.len() {
-                        println!(
-                            "Not a valid choice; choose a choice from 1 to {}.",
-                            choices.len()
-                        );
-                        continue;
-                    }
-                    return choices.swap_remove(chosen_index - 1);
-                }
-                Err(_) => {
-                    println!("Not a valid choice; enter a number.");
-                }
-            }
-        }
-    }
-}
-
-pub struct World;
-=======
 mod accessible;
+mod adventure_parser;
 mod character;
 mod choice;
 mod io;
+mod parse;
 mod stat;
 mod story_graph;
 mod table;
@@ -78,7 +14,6 @@ use character::Character;
 use choice::ConstantChoice;
 use io::{Interface, StandardIoInterface};
 use world::World;
->>>>>>> 53ef8eab27f90c038daacb212101083788c73fd9
 
 #[derive(Debug)]
 enum Summit {
@@ -171,13 +106,15 @@ fn exit<I: Interface>(mut interface: I, _world: World) -> ExitMarker {
 }
 
 fn main() {
-    let mut interface = StandardIoInterface {};
-    let mut world = World::empty();
-    world
-        .player
-        .stats
-        .mut_stat(stat::StatKind::Strength)
-        .advance(1000);
-    interface.write(world.player.stats.print_table().as_str());
-    enter(interface, world);
+    adventure_parser::run();
+    /*let mut interface = StandardIoInterface {};
+        let mut world = World::empty();
+        world
+            .player
+            .stats
+            .mut_stat(stat::StatKind::Strength)
+            .advance(1000);
+        interface.write(world.player.stats.print_table().as_str());
+        enter(interface, world);
+    */
 }
