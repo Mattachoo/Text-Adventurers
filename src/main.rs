@@ -1,6 +1,7 @@
 mod accessible;
 mod character;
 mod choice;
+mod hp;
 mod inventory;
 mod io;
 mod stat;
