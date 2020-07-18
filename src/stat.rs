@@ -272,6 +272,11 @@ impl StatBlock {
         success
     }
 
+    pub fn max_hp(&self) -> i64 {
+        let constitution_value: i64 = self.stat(StatKind::Constitution).value(self);
+        constitution_value * constitution_value
+    }
+
     pub fn print_table(&self) -> String {
         let table = Table {
             columns: vec![
@@ -342,6 +347,13 @@ mod tests {
         assert_eq!(block.stat(StatKind::Strength).base_value(), 0);
         block.mut_stat(StatKind::Strength).advance(100);
         assert_eq!(block.stat(StatKind::Strength).base_value(), 1);
+    }
+
+    #[test]
+    pub fn derives_max_hp_from_constitution() {
+        let mut block = StatBlock::new();
+        block.mut_stat(StatKind::Constitution).set_base_value(8);
+        assert_eq!(block.max_hp(), 64);
     }
 
     #[test]
