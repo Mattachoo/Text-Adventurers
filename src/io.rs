@@ -65,6 +65,7 @@ impl TestInterface {
 impl Interface for TestInterface {
     fn write(&mut self, message: &str) {
         self.written.push_str(message);
+        self.written.push_str("\n");
     }
 
     fn choose<T: Choice>(&mut self, mut choices: Vec<T>) -> T {
@@ -81,9 +82,9 @@ mod tests {
         let mut interface = TestInterface::new(VecDeque::new());
         assert_eq!(interface.written, String::new());
         interface.write("foo");
-        assert_eq!(interface.written, "foo");
+        assert_eq!(interface.written, "foo\n");
         interface.write(" bar");
-        assert_eq!(interface.written, "foo bar");
+        assert_eq!(interface.written, "foo\n bar\n");
     }
 
     #[derive(Clone)]

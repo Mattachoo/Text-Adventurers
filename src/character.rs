@@ -1,6 +1,8 @@
 use crate::accessible::{Accessible, Accessor};
+use crate::combat::{Action, CombatFrame, Target};
 use crate::hp::HitPoints;
-use crate::stat::{StatBlock, StatKind};
+use crate::io::Interface;
+use crate::stat::StatBlock;
 
 pub struct Character {
     pub name: String,
@@ -25,6 +27,11 @@ impl Character {
         self.hitpoints.set_max(self.stats.max_hp());
         &mut self.hitpoints
     }
+
+    pub fn act<I: Interface>(&self, interface: &mut I, combat_frame: &CombatFrame) -> Action {
+        // TODO(amclees): Support other kinds of actions.
+        Action::Attack(Target::target_character(self))
+    }
 }
 
 impl Accessible for Character {
@@ -36,6 +43,7 @@ impl Accessible for Character {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::stat::StatKind;
 
     #[test]
     pub fn derives_max_hitpoints_from_stats() {
