@@ -41,6 +41,10 @@ impl Character {
         &mut self.hitpoints
     }
 
+    pub fn hitpoints_snapshot(&self) -> &HitPoints {
+        &self.hitpoints
+    }
+
     pub fn act<I: Interface>(&self, interface: &mut I, combat_frame: &CombatFrame) -> Action {
         match self.controller {
             Controller::Player => self.ask_player_for_action(interface, combat_frame),

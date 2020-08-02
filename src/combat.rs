@@ -3,6 +3,7 @@ use crate::choice::Choice;
 use crate::hp::HitPointState;
 use crate::io::Interface;
 use crate::stat::StatKind;
+use crate::table::{Column, ColumnAlignment, Table};
 
 use std::fmt;
 
@@ -90,7 +91,7 @@ impl<'a> CombatFrame<'a> {
         while !combat_over {
             // Assumption: characters is not modified when actions are run.
             for i in 0..self.characters.len() {
-                // TODO Need IO interface in act
+                self.summarize_status(interface);
                 let action = self.characters[i].act(interface, &self);
                 action.run(interface, i, self);
                 if self.finished() {
@@ -118,6 +119,39 @@ impl<'a> CombatFrame<'a> {
             }
         }
         None
+    }
+
+    fn summarize_status<I: Interface>(&self, interface: &mut I) {
+        let table: Table<Character> = Table {
+            columns: vec![
+                Column {
+                    name: "Name",
+                    extractor: Box::new(|character: &Character| character.name.clone()),
+                    alignment: ColumnAlignment::Left,
+                },
+                Column {
+                    name: "HP",
+                    extractor: Box::new(|character: &Character| {
+                        format!("{}", character.hitpoints_snapshot().current())
+                    }),
+                    alignment: ColumnAlignment::Right,
+                },
+                Column {
+                    name: "Max HP",
+                    extractor: Box::new(|character: &Character| {
+                        format!("{}", character.hitpoints_snapshot().max())
+                    }),
+                    alignment: ColumnAlignment::Right,
+                },
+            ],
+        };
+        interface.write(
+            &table.render(
+                self.characters
+                    .iter()
+                    .map(|character: &&mut Character| &(**character)),
+            ),
+        );
     }
 
     pub fn list_targets(&self) -> Vec<Target> {
@@ -157,12 +191,27 @@ mod tests {
         frame.add_character(&mut char2);
 
         let mut interface = TestInterface::new(VecDeque::new());
+        // Newline for nicer table layout in test.
+        interface.write("");
         frame.run(&mut interface);
 
         assert_eq!(
             interface.written,
-            "Char1 attacked Char1 for 3 damage.
+            "
+| Name  | HP | Max HP |
+| Char1 |  4 |      4 |
+| Char2 |  9 |      9 |
+
+Char1 attacked Char1 for 3 damage.
+| Name  | HP | Max HP |
+| Char1 |  1 |      4 |
+| Char2 |  9 |      9 |
+
 Char2 attacked Char2 for 1 damage.
+| Name  | HP | Max HP |
+| Char1 |  1 |      4 |
+| Char2 |  8 |      9 |
+
 Char1 attacked Char1 for 3 damage.\n"
         );
         assert_eq!(char1.hitpoints().state(), HitPointState::Depleted);
@@ -178,8 +227,18 @@ Char1 attacked Char1 for 3 damage.\n"
         frame.add_character(&mut char2);
 
         let mut interface = TestInterface::new(VecDeque::from(vec![1]));
+        // Newline for nicer table layout in test.
+        interface.write("");
         frame.run(&mut interface);
 
-        assert_eq!(interface.written, "Player attacked Char2 for 1 damage.\n");
+        assert_eq!(
+            interface.written,
+            "
+| Name   | HP | Max HP |
+| Player |  1 |      1 |
+| Char2  |  1 |      1 |
+
+Player attacked Char2 for 1 damage.\n"
+        );
     }
 }
