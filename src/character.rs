@@ -4,10 +4,16 @@ use crate::hp::HitPoints;
 use crate::io::Interface;
 use crate::stat::StatBlock;
 
+enum Controller {
+    Player,
+    Ai,
+}
+
 pub struct Character {
     pub name: String,
     pub stats: StatBlock,
     hitpoints: HitPoints,
+    controller: Controller,
     accessor: Accessor<Character>,
 }
 
@@ -19,8 +25,15 @@ impl Character {
             name,
             stats,
             hitpoints: HitPoints::new(stats.max_hp()),
+            controller: Controller::Ai,
             accessor,
         }
+    }
+
+    pub fn new_player(name: String, stats: StatBlock) -> Character {
+        let mut character = Character::new(name, stats);
+        character.controller = Controller::Player;
+        character
     }
 
     pub fn hitpoints(&mut self) -> &mut HitPoints {
@@ -29,7 +42,27 @@ impl Character {
     }
 
     pub fn act<I: Interface>(&self, interface: &mut I, combat_frame: &CombatFrame) -> Action {
-        // TODO(amclees): Support other kinds of actions.
+        match self.controller {
+            Controller::Player => self.ask_player_for_action(interface, combat_frame),
+            Controller::Ai => self.select_action_for_npc(combat_frame),
+        }
+    }
+
+    fn ask_player_for_action<I: Interface>(
+        &self,
+        interface: &mut I,
+        combat_frame: &CombatFrame,
+    ) -> Action {
+        interface.choose(
+            combat_frame
+                .list_targets()
+                .into_iter()
+                .map(|target| Action::Attack(target))
+                .collect(),
+        )
+    }
+
+    fn select_action_for_npc(&self, combat_frame: &CombatFrame) -> Action {
         Action::Attack(Target::target_character(self))
     }
 }

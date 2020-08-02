@@ -1,6 +1,9 @@
 use crate::character::Character;
+use crate::choice::Choice;
 use crate::hp::HitPointState;
 use crate::io::Interface;
+
+use std::fmt;
 
 pub struct Target {
     name: String,
@@ -11,6 +14,12 @@ impl Target {
         Target {
             name: character.name.clone(),
         }
+    }
+}
+
+impl fmt::Display for Target {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
     }
 }
 
@@ -43,6 +52,14 @@ impl Action {
             }
         }
         // Do nothing
+    }
+}
+
+impl Choice for Action {
+    fn describe(&self) -> String {
+        match self {
+            Action::Attack(target) => format!["Attack {}", target],
+        }
     }
 }
 
@@ -95,6 +112,13 @@ impl<'a> CombatFrame<'a> {
         }
         None
     }
+
+    pub fn list_targets(&self) -> Vec<Target> {
+        self.characters
+            .iter()
+            .map(|character| Target::target_character(character))
+            .collect()
+    }
 }
 
 #[cfg(test)]
@@ -138,5 +162,20 @@ Char2 attacked Char2 for 1 damage.
 Char1 attacked Char1 for 1 damage.\n"
         );
         assert_eq!(char1.hitpoints().state(), HitPointState::Depleted);
+    }
+
+    #[test]
+    pub fn players_choose_actions() {
+        let mut char1 = Character::new_player(String::from("Player"), StatBlock::new());
+        let mut char2 = Character::new(String::from("Char2"), StatBlock::new());
+
+        let mut frame = CombatFrame::new();
+        frame.add_character(&mut char1);
+        frame.add_character(&mut char2);
+
+        let mut interface = TestInterface::new(VecDeque::from(vec![1]));
+        frame.run(&mut interface);
+
+        assert_eq!(interface.written, "Player attacked Char2 for 1 damage.\n");
     }
 }
