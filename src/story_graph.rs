@@ -175,7 +175,7 @@ mod tests {
                             template::Token::Accessor(AccessPath::from(String::from(
                                 "player.name",
                             ))),
-                            template::Token::Text(String::from(".\n")),
+                            template::Token::Text(String::from(".")),
                         ],
                     },
                 }),
@@ -188,7 +188,7 @@ mod tests {
         node.elements[0].run(0, &node, &graph, &mut interface, world);
         assert_eq!(
             interface.written,
-            "player.name: Player.\nGoodbye! Thanks for playing."
+            "player.name: Player.\nGoodbye! Thanks for playing.\n"
         );
     }
 
@@ -200,13 +200,13 @@ mod tests {
                 StoryElement::Choice(StoryChoice {
                     options: vec![
                         StoryOption {
-                            intro_text: Template::raw_from_str("Foo\n"),
+                            intro_text: Template::raw_from_str("Foo"),
                             result_text: None,
                             next_node: None,
                         },
                         StoryOption {
-                            intro_text: Template::raw_from_str("Bar\n"),
-                            result_text: Some(Template::raw_from_str("Baz\n")),
+                            intro_text: Template::raw_from_str("Bar"),
+                            result_text: Some(Template::raw_from_str("Baz")),
                             next_node: None,
                         },
                     ],
@@ -218,11 +218,11 @@ mod tests {
         let mut interface = TestInterface::new(VecDeque::from(vec![1, 0]));
         let world = World::empty();
         node.elements[0].run(0, &node, &graph, &mut interface, world);
-        assert_eq!(interface.written, "Baz\nGoodbye! Thanks for playing.");
+        assert_eq!(interface.written, "Baz\nGoodbye! Thanks for playing.\n");
         interface.written.clear();
         let world = World::empty();
         node.elements[0].run(0, &node, &graph, &mut interface, world);
-        assert_eq!(interface.written, "Goodbye! Thanks for playing.");
+        assert_eq!(interface.written, "Goodbye! Thanks for playing.\n");
     }
 
     #[test]
@@ -232,17 +232,17 @@ mod tests {
             "FooNode".to_string(),
             vec![
                 StoryElement::Text(StoryText {
-                    text: Template::raw_from_str("Choose Foo or Bar\n"),
+                    text: Template::raw_from_str("Choose Foo or Bar"),
                 }),
                 StoryElement::Choice(StoryChoice {
                     options: vec![
                         StoryOption {
-                            intro_text: Template::raw_from_str("Foo\n"),
-                            result_text: Some(Template::raw_from_str("Chose Foo\n")),
+                            intro_text: Template::raw_from_str("Foo"),
+                            result_text: Some(Template::raw_from_str("Chose Foo")),
                             next_node: Some(String::from("FooNode")),
                         },
                         StoryOption {
-                            intro_text: Template::raw_from_str("Bar\n"),
+                            intro_text: Template::raw_from_str("Bar"),
                             result_text: None,
                             next_node: Some(String::from("BarNode")),
                         },
@@ -254,7 +254,7 @@ mod tests {
             "BarNode".to_string(),
             vec![
                 StoryElement::Text(StoryText {
-                    text: Template::raw_from_str("Reached Bar\n"),
+                    text: Template::raw_from_str("Reached Bar"),
                 }),
                 StoryElement::Exit,
             ],
@@ -273,7 +273,7 @@ Choose Foo or Bar
 Chose Foo
 Choose Foo or Bar
 Reached Bar
-Goodbye! Thanks for playing."
+Goodbye! Thanks for playing.\n"
         );
     }
 }
