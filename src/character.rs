@@ -12,6 +12,7 @@ enum Controller {
 pub struct Character {
     pub name: String,
     pub stats: StatBlock,
+    faction: String,
     hitpoints: HitPoints,
     controller: Controller,
     accessor: Accessor<Character>,
@@ -22,8 +23,9 @@ impl Character {
         let mut accessor = Accessor::new();
         accessor.register("name", Box::new(|c: &Character| Some(c.name.clone())));
         Character {
-            name,
+            name: name.clone(),
             stats,
+            faction: name,
             hitpoints: HitPoints::new(stats.max_hp()),
             controller: Controller::Ai,
             accessor,
@@ -43,6 +45,14 @@ impl Character {
 
     pub fn hitpoints_snapshot(&self) -> &HitPoints {
         &self.hitpoints
+    }
+
+    pub fn faction(&self) -> &str {
+        &self.faction
+    }
+
+    pub fn set_faction(&mut self, faction: String) {
+        self.faction = faction;
     }
 
     pub fn act<I: Interface>(&self, interface: &mut I, combat_frame: &CombatFrame) -> Action {
@@ -93,5 +103,18 @@ mod tests {
             .mut_stat(StatKind::Endurance)
             .set_base_value(5);
         assert_eq!(character.hitpoints().max(), 36);
+    }
+
+    #[test]
+    pub fn base_faction_is_name() {
+        let mut character = Character::new(String::from("TestChar"), StatBlock::new());
+        assert_eq!(character.faction(), "TestChar");
+    }
+
+    #[test]
+    pub fn custom_factions_may_be_set() {
+        let mut character = Character::new(String::from("TestChar"), StatBlock::new());
+        character.set_faction(String::from("CustomFaction"));
+        assert_eq!(character.faction(), "CustomFaction");
     }
 }
