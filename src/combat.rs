@@ -2,6 +2,7 @@ use crate::character::Character;
 use crate::choice::Choice;
 use crate::hp::HitPointState;
 use crate::io::Interface;
+use crate::stat::StatKind;
 
 use std::fmt;
 
@@ -32,14 +33,20 @@ impl Action {
         match self {
             Action::Attack(target) => {
                 if let Some(target_index) = combat_frame.find_target(target) {
+                    let mut strength = 0;
+                    {
+                        let actor = &mut combat_frame.characters[actor];
+                        strength = actor.stats.stat(StatKind::Strength).value(&actor.stats);
+                    }
+                    let damage = 1 + strength;
                     {
                         let target_character = &mut combat_frame.characters[target_index];
-                        target_character.hitpoints().take_damage(1);
+                        target_character.hitpoints().take_damage(damage);
                     }
                     let actor = &mut combat_frame.characters[actor];
                     interface.write(&format![
-                        "{} attacked {} for 1 damage.",
-                        actor.name, target.name
+                        "{} attacked {} for {} damage.",
+                        actor.name, target.name, damage
                     ]);
                 } else {
                     let actor = &mut combat_frame.characters[actor];
@@ -133,6 +140,7 @@ mod tests {
     #[test]
     pub fn characters_take_actions_until_combat_end() {
         let mut char1 = Character::new(String::from("Char1"), StatBlock::new());
+        char1.stats.mut_stat(StatKind::Strength).set_base_value(2);
         char1
             .stats
             .mut_stat(StatKind::Constitution)
@@ -153,13 +161,9 @@ mod tests {
 
         assert_eq!(
             interface.written,
-            "Char1 attacked Char1 for 1 damage.
+            "Char1 attacked Char1 for 3 damage.
 Char2 attacked Char2 for 1 damage.
-Char1 attacked Char1 for 1 damage.
-Char2 attacked Char2 for 1 damage.
-Char1 attacked Char1 for 1 damage.
-Char2 attacked Char2 for 1 damage.
-Char1 attacked Char1 for 1 damage.\n"
+Char1 attacked Char1 for 3 damage.\n"
         );
         assert_eq!(char1.hitpoints().state(), HitPointState::Depleted);
     }
