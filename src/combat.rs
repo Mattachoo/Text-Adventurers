@@ -27,6 +27,7 @@ impl fmt::Display for Target {
 
 pub enum Action {
     Attack(Target),
+    Idle,
 }
 
 impl Action {
@@ -58,8 +59,11 @@ impl Action {
                     ]);
                 }
             }
+            Action::Idle => {
+                let actor = &mut combat_frame.characters[actor];
+                interface.write(&format!["{} dawdles.", actor.name]);
+            }
         }
-        // Do nothing
     }
 }
 
@@ -67,6 +71,7 @@ impl Choice for Action {
     fn describe(&self) -> String {
         match self {
             Action::Attack(target) => format!["Attack {}", target],
+            Action::Idle => String::from("Do nothing"),
         }
     }
 }
@@ -116,6 +121,15 @@ impl<'a> CombatFrame<'a> {
         for i in 0..self.characters.len() {
             if self.characters[i].name == target.name {
                 return Some(i);
+            }
+        }
+        None
+    }
+
+    pub fn find_target_character(&self, target: &Target) -> Option<&Character> {
+        for i in 0..self.characters.len() {
+            if self.characters[i].name == target.name {
+                return Some(self.characters[i]);
             }
         }
         None
@@ -202,19 +216,29 @@ mod tests {
 | Char1 |  4 |      4 |
 | Char2 |  9 |      9 |
 
-Char1 attacked Char1 for 3 damage.
+Char1 attacked Char2 for 3 damage.
 | Name  | HP | Max HP |
-| Char1 |  1 |      4 |
-| Char2 |  9 |      9 |
+| Char1 |  4 |      4 |
+| Char2 |  6 |      9 |
 
-Char2 attacked Char2 for 1 damage.
+Char2 attacked Char1 for 1 damage.
 | Name  | HP | Max HP |
-| Char1 |  1 |      4 |
-| Char2 |  8 |      9 |
+| Char1 |  3 |      4 |
+| Char2 |  6 |      9 |
 
-Char1 attacked Char1 for 3 damage.\n"
+Char1 attacked Char2 for 3 damage.
+| Name  | HP | Max HP |
+| Char1 |  3 |      4 |
+| Char2 |  3 |      9 |
+
+Char2 attacked Char1 for 1 damage.
+| Name  | HP | Max HP |
+| Char1 |  2 |      4 |
+| Char2 |  3 |      9 |
+
+Char1 attacked Char2 for 3 damage.\n"
         );
-        assert_eq!(char1.hitpoints().state(), HitPointState::Depleted);
+        assert_eq!(char2.hitpoints().state(), HitPointState::Depleted);
     }
 
     #[test]

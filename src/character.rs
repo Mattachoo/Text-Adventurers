@@ -77,7 +77,21 @@ impl Character {
     }
 
     fn select_action_for_npc(&self, combat_frame: &CombatFrame) -> Action {
-        Action::Attack(Target::target_character(self))
+        match combat_frame
+            .list_targets()
+            .into_iter()
+            .filter(|target| {
+                if let Some(target_character) = combat_frame.find_target_character(target) {
+                    return self.faction != target_character.faction;
+                }
+                return false;
+            })
+            .map(|target| Action::Attack(target))
+            .next()
+        {
+            Some(attack_action) => attack_action,
+            None => Action::Idle,
+        }
     }
 }
 
